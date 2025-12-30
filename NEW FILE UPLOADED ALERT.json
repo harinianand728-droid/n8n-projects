@@ -1,0 +1,139 @@
+{
+  "name": "NEW FILE UPLOADED ALERT",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFile",
+        "fileToWatch": {
+          "__rl": true,
+          "value": "=",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -80
+      ],
+      "id": "441d54cd-e1a2-42ab-ae4f-292caabc0f96",
+      "name": "Google Drive Trigger",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1JH9FPd87rn4wNND",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3025f729-6241-47bc-9383-c3510eaf1802",
+              "name": "=filename",
+              "value": "={{ $json[\"name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "04e6dae7-2087-46d2-8387-0ae8b4b1836c",
+              "name": "fileid",
+              "value": "={{ $json[\"id\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "df5b19c2-06ac-48aa-9fe7-32861771dc69",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "harinianand728@gmail.com",
+        "subject": "New File Uploaded",
+        "emailType": "text",
+        "message": "=A new file was uploaded:\nName: {{$json.name }}\nLink: {{$json.webViewLink}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        -80
+      ],
+      "id": "adce954d-bef2-4706-bee0-470bbbdc992e",
+      "name": "Send a message",
+      "webhookId": "0c2d1c3f-5a69-418c-ab62-73efe0046c73",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "J8U8RFV0bRRnoWZx",
+          "name": "Gmail account 5"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveExecutionProgress": true
+  },
+  "versionId": "f950133f-98ed-41c1-b635-627111e633cc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f6a1e6b905b386d6585a11f05ea9cedfa593013efa46dba3c6c48aa1b920ee3d"
+  },
+  "id": "UwSAtp0iRPiNYisR",
+  "tags": [
+    {
+      "updatedAt": "2025-12-28T16:59:46.912Z",
+      "createdAt": "2025-12-28T16:59:46.912Z",
+      "id": "Op6hgcSz2oRGH11O",
+      "name": "operations"
+    }
+  ]
+}
