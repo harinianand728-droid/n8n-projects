@@ -1,0 +1,171 @@
+{
+  "name": "ASMR Post Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18,
+              "triggerAtMinute": 40
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        -32
+      ],
+      "id": "0f1b714c-2f2b-4d32-a928-c39801f27819",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Write a short relaxing ASMR caption with whisper tone, calming words, and soft emojis.\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -128,
+        -32
+      ],
+      "id": "ea2739c9-8549-467d-8372-596b2e8a0af0",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "WCbZFfnCLe1Haq2x",
+          "name": "Header Auth account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "37d3170b-5e0d-4504-ab1e-aeac1116c232",
+              "name": "asmr_text",
+              "value": "={{$json[\"choices\"][0][\"message\"][\"content\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -32
+      ],
+      "id": "e6a099fd-fb5a-48a9-a38b-60a1a0705470",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1456530286274674831/LoJouyjV1yu59BxrA29Lx7G8SCNCvEkqxRf3w9JzVSNYRgbj5c1m4bdO_cSwmAHl5BwQ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{$json.asmr_text}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        288,
+        -32
+      ],
+      "id": "445b60ff-96dc-4114-ac94-4ed8c281b7e0",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ecb119ec-4136-4dc1-945d-0fb8d2f4ec65",
+  "meta": {
+    "instanceId": "f6a1e6b905b386d6585a11f05ea9cedfa593013efa46dba3c6c48aa1b920ee3d"
+  },
+  "id": "y9ZOGjKWWbxJG21r",
+  "tags": [
+    {
+      "updatedAt": "2025-12-28T16:59:46.912Z",
+      "createdAt": "2025-12-28T16:59:46.912Z",
+      "id": "Op6hgcSz2oRGH11O",
+      "name": "operations"
+    }
+  ]
+}
