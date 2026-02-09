@@ -1,0 +1,283 @@
+{
+  "name": "blog automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        -96
+      ],
+      "id": "14ead027-7303-49c7-9ed8-ab0e3f8ae83f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "harinianand728@gmail.com",
+        "subject": "Daily Blog Saved Successfully!",
+        "emailType": "text",
+        "message": "=Hello,  Your daily blog has been successfully generated and saved to Google Drive. \n📄 File Name: {{$now.toFormat(\"yyyy-MM-dd\")}}-Daily-Blog.md\n📅 Date: {{$now.toFormat(\"dd MMMM yyyy\")}}  \nYou can access it anytime from your Drive.  – Automated Blog System",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        192
+      ],
+      "id": "1b9283cc-9df0-4bb4-ad02-440309c7e6bf",
+      "name": "Send a message",
+      "webhookId": "04e41fef-290b-4efa-8a25-7a017724e568",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "bt2Ucx5RokvbLV2n",
+          "name": "Gmail account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.blog }}",
+        "name": "={{$now.toFormat(\"yyyy-MM-dd\")}}-Daily-Blog.md\n",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        352,
+        192
+      ],
+      "id": "62c01cf3-28f1-46db-ac9e-54ebecc51893",
+      "name": "blog upload to drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "PTsElnqPH2khukZE",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54a54bca-4d04-4e69-bf58-a665e16f0b73",
+              "name": "blog",
+              "value": "={{$json.candidates[0].content.parts[0].text}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        192
+      ],
+      "id": "9f20bb74-9738-4f33-8caa-a6c94bf5b4ae",
+      "name": "blog set to text file"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "076990a3-32a2-414c-9f07-91089a27975f",
+              "name": "today",
+              "value": "={{$now.toFormat(\"MMMM dd\")}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        -96
+      ],
+      "id": "ac181a95-544c-4037-b2c9-2c5774c39a79",
+      "name": "set day"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Today is {{$json.today}}.\nIs there any international, global, or awareness special day today?\nIf yes, reply only with the day name.\nIf not, reply exactly as: No Special Day.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        112,
+        -96
+      ],
+      "id": "05477edf-7a33-4c30-83f4-987c7b290aee",
+      "name": "find the special day",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OZIGNLauYatjoOjt",
+          "name": "Google Gemini(PaLM) Api account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyBw7k92wT87ILP4h_nwfm-HalVJ-LrCqGU"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Write a professional blog article in clear, simple English. The blog must strictly follow the structure below and be easy to read.\\n\\nStart with a clear, SEO-friendly Title that accurately reflects the topic.\\n\\nBelow the title, mention:\\nAuthor: Automated Blog System  \\nDate: {{$now.toFormat(\"MMMM dd\")}}\\n\\nIntroduction:\\nWrite one short paragraph explaining the purpose of the blog. Use a hook or real-world context to engage the reader.\\n\\nMain Body:\\nDivide the content into meaningful subheadings. Under each subheading, write short paragraphs explaining the topic clearly. Include examples, facts, statistics, or real-world relevance where appropriate.\\n\\nConclusion:\\nSummarize the key points in one clear paragraph and reinforce why the topic is important.\\n\\nCall to Action (CTA):\\nEncourage readers to take a positive action such as learning more, spreading awareness, or applying the information in real life.\\n\\nReferences / Links:\\nProvide 2–4 trustworthy reference links from official or educational sources such as the United Nations, WHO, government portals, or reputed organizations.\\nIMPORTANT: The reference links MUST be written in Markdown clickable format like this:\\n[World Health Organization](https://www.who.int)\\n[United Nations](https://www.un.org)\\n\\nTopic Selection Rule:\\nIf today has an internationally recognized special or awareness day, write the blog about that day.\\nIf no special day exists, write a high-quality global awareness or educational blog.\\n\\nTone: Professional and simple.\\nLength: 600–800 words.\"\n        }\n      ]\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        560,
+        -96
+      ],
+      "id": "48ea156e-9bd3-4e9b-b20e-deca73d45755",
+      "name": "blog create for today's special day"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "set day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "blog upload to drive": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "blog set to text file": {
+      "main": [
+        [
+          {
+            "node": "blog upload to drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set day": {
+      "main": [
+        [
+          {
+            "node": "find the special day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "find the special day": {
+      "main": [
+        [
+          {
+            "node": "blog create for today's special day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "blog create for today's special day": {
+      "main": [
+        [
+          {
+            "node": "blog set to text file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "962b0547-af90-4dd1-9867-5dba43499457",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "856f7afbdaceef96c7f279328be779babcdb8f72c9176b71adcccaa0278dba96"
+  },
+  "id": "_aGl8WaSM38j2441qq9ho",
+  "tags": []
+}
