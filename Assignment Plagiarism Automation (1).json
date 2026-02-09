@@ -1,0 +1,640 @@
+{
+  "name": "Assignment Plagiarism Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9136145b-b7b0-478d-b65b-889563e1b8ab",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1552,
+        -80
+      ],
+      "id": "a9145988-cb51-41b1-9da1-c70d990435c5",
+      "name": "Webhook",
+      "webhookId": "9136145b-b7b0-478d-b65b-889563e1b8ab"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "assignment",
+        "name": "={{ $json.body.student_name }}-assignment",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1328,
+        -80
+      ],
+      "id": "d54af4b5-bc06-4f29-9cee-77a89e3f430c",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "MExGb39FQpzPUyJT",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1088,
+        -80
+      ],
+      "id": "a8cf1e09-dc9d-47a6-bbfb-82dbdb9a9ec0",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "mMNBkTdfnpxR1pjY",
+          "name": "Google Drive account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are a plagiarism analysis system.\n\nAnalyze the given assignment text and generate a detailed plagiarism report. Before analyzing, clean the text by removing symbols such as *, /, bullets, and unnecessary line breaks.\nThen generate the plagiarism report\n\nReturn the output in the following EXACT format:\n\nPlagiarism_Percentage: <number>\n\nPlagiarism_Report:\n- Summary of plagiarism findings\n- Types of plagiarism detected (if any)\n- Possible sources or nature of copied content\n- Overall originality assessment\n\n\nAssignment Text:\n{{ $json.text }}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        -80
+      ],
+      "id": "f793dd76-1912-48df-abd0-795272667c94",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "siOLYEzzvni6cGi2",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3a8608b4-6282-4b8b-8ca0-9a6e3145ea33",
+              "leftValue": "={{ $json.percentage }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -384,
+        336
+      ],
+      "id": "d4b61c43-95e8-4b0a-b217-1385cef5034e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "harinipriyam583224104034@nprcolleges.org",
+        "subject": "High Plagiarism Detected – Assignment Report",
+        "message": "=<html>\n  <body>\n    <p>Dear Faculty,</p>\n\n```\n<p>\n  This is to formally inform you that a <b>high level of plagiarism</b> has been detected in a recently submitted assignment.\n  The details are provided below for your kind review.\n</p>\n\n<h3>Assignment & Student Details</h3>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\">\n  <tr>\n    <th align=\"left\">Student Name</th>\n    <td>{{ $('Webhook').item.json.body.student_name }}</td>\n  </tr>\n  <tr>\n    <th align=\"left\">Plagiarism Percentage</th>\n    <td>{{ $json.percentage }}%</td>\n  </tr>\n</table>\n\n<br>\n\n<h3>Detailed Plagiarism Report</h3>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\">\n  <tr>\n    <th align=\"left\">Report Summary</th>\n  </tr>\n  <tr>\n    <td>\n      {{ $('extract plagiarism report').item.json.raw_text }}\n    </td>\n  </tr>\n</table>\n\n<br>\n\n<p>\n  This is an <b>automatically generated report</b> from the Online Assignment Plagiarism Automation System.\n</p>\n\n<p>\n  Regards,<br>\n  <b>Plagiarism Automation System</b>\n</p>\n```\n\n  </body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        96
+      ],
+      "id": "a7cbb5fa-5701-4c72-ade4-e10419f137b3",
+      "name": "alert message to faculty",
+      "webhookId": "32863ca3-2ecb-4846-8b13-a2e9e7322570",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mzfZ4TR2VmGCBnTu",
+          "name": "Gmail account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.student_email }}",
+        "subject": "High Plagiarism Detected",
+        "message": "=<html>\n  <body>\n    <p>Dear Student,</p>\n\n```\n<h3>Assignment Review Details</h3>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\">\n  <tr>\n    <th align=\"left\">Student Name</th>\n    <td>{{ $('Webhook').item.json.body.student_name }}</td>\n  </tr>\n  <tr>\n    <th align=\"left\">Plagiarism Percentage</th>\n    <td>{{ $json.percentage }}%</td>\n  </tr>\n</table>\n\n<br>\n\n<p>\n  Your recently submitted assignment has been reviewed through the plagiarism detection system.\n</p>\n\n<p style=\"color:red;\">\n  <b>⚠️ High plagiarism has been identified in your submission.</b>\n  This indicates that a significant portion of the content is not original.\n</p>\n\n<p>\n  You are advised to <b>revise the assignment carefully</b> and resubmit it with original content written in your own words.\n  Please ensure proper understanding and adherence to academic integrity guidelines.\n</p>\n\n<p>\n  Repeated instances of plagiarism may result in <b>academic action</b> as per institutional policies.\n</p>\n\n<p>\n  If you have any questions, kindly contact your faculty for clarification.\n</p>\n\n<p>\n  Regards,<br>\n  <b>Faculty Team</b>\n</p>\n```\n\n  </body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        256
+      ],
+      "id": "ad026d48-1169-4850-a7d1-7bfe070d4038",
+      "name": "alert message to student",
+      "webhookId": "0d808d4b-b54d-45b1-b218-64437e8c19bb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mzfZ4TR2VmGCBnTu",
+          "name": "Gmail account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.student_email }}",
+        "subject": "Assignment Plagiarism Check – Approved ✅",
+        "message": "=<html>\n  <body>\n    <p>Dear Student,</p>\n\n```\n<h3>Assignment Review Details</h3>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\">\n  <tr>\n    <th align=\"left\">Student Name</th>\n    <td>{{ $('Webhook').item.json.body.student_name }}</td>\n  </tr>\n  <tr>\n    <th align=\"left\">Plagiarism Percentage</th>\n    <td>{{ $json.percentage }}%</td>\n  </tr>\n</table>\n\n<br>\n\n<p>\n  Your recently submitted assignment has been successfully reviewed through the plagiarism analysis system.\n</p>\n\n<p style=\"color:green;\">\n  <b>✅ The plagiarism level is within acceptable limits, and your submission has been approved for evaluation.</b>\n</p>\n\n<p>\n  Good work on maintaining originality in your content. Please continue following academic integrity guidelines\n  and submitting original work in future assignments as well.\n</p>\n\n<p>\n  Best wishes for your academic progress.\n</p>\n\n<p>\n  Regards,<br>\n  <b>Faculty Team</b>\n</p>\n```\n\n  </body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        464
+      ],
+      "id": "c957e7d6-d88f-470d-84c5-32a59000984e",
+      "name": "accept message to student",
+      "webhookId": "e0f58cb8-9ac5-4e62-9075-cdb9ef986822",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mzfZ4TR2VmGCBnTu",
+          "name": "Gmail account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "harinipriyam583224104034@nprcolleges.org",
+        "subject": "Plagiarism Check Completed – Acceptable Level",
+        "message": "=<html>\n<body>\n\n<p>Dear Faculty,</p>\n\n<p>\nThe plagiarism analysis for a recently submitted assignment has been completed.\nPlease find the details below.\n</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\">\n  <tr>\n    <th align=\"left\">Student Name</th>\n    <td>{{ $('Webhook').item.json.body.student_name }}</td>\n  </tr>\n  <tr>\n    <th align=\"left\">Plagiarism Percentage</th>\n    <td>{{ $json.percentage }}%</td>\n  </tr>\n  <tr>\n    <th align=\"left\">Status</th>\n    <td>\n      The plagiarism level is within the acceptable range.\n      The assignment may be accepted for evaluation.\n    </td>\n  </tr>\n</table>\n\n<br>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" width=\"100%\">\n  <tr>\n    <th align=\"left\">Plagiarism Report Summary</th>\n  </tr>\n  <tr>\n    <td>\n      <pre style=\"white-space: pre-wrap; font-family: Arial, sans-serif;\">\n{{ $('extract plagiarism report').item.json.raw_text }}\n      </pre>\n    </td>\n  </tr>\n</table>\n\n<br>\n\n<p>\nThis is an automatically generated notification from the\nOnline Assignment Plagiarism Automation System.\n</p>\n\n<p>\nRegards,<br>\n<b>Plagiarism Automation System</b>\n</p>\n\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        704
+      ],
+      "id": "f0417ffa-38f9-4256-86fe-4556753b4be3",
+      "name": "accept message to faculty",
+      "webhookId": "6a40f4bd-37f0-4a60-88a6-20bb5ce612ce",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mzfZ4TR2VmGCBnTu",
+          "name": "Gmail account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CH_3JUEsPJ5nQzqGVz7wVscZ1tRLY6-ERXPJ4eSmchI",
+          "mode": "list",
+          "cachedResultName": "Assignment Plagiarism Reports",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CH_3JUEsPJ5nQzqGVz7wVscZ1tRLY6-ERXPJ4eSmchI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CH_3JUEsPJ5nQzqGVz7wVscZ1tRLY6-ERXPJ4eSmchI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Student Name": "={{ $('Webhook').item.json.body.student_name }}",
+            "Student Email": "={{ $('Webhook').item.json.body.student_email }}",
+            "Assignment Name": "={{ $('Upload file').item.json.name }}",
+            "Plagiarism Report": "={{ $('Message a model').item.json.output[0].content[0].text }}",
+            "Status": "High"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Student Name",
+              "displayName": "Student Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Student Email",
+              "displayName": "Student Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assignment Name",
+              "displayName": "Assignment Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Plagiarism Report",
+              "displayName": "Plagiarism Report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        96
+      ],
+      "id": "2128b5f4-698e-42a4-8685-aacbb7d5d3e6",
+      "name": "plagiarism report",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1PJPicyIC12abqAo",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CH_3JUEsPJ5nQzqGVz7wVscZ1tRLY6-ERXPJ4eSmchI",
+          "mode": "list",
+          "cachedResultName": "Assignment Plagiarism Reports",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CH_3JUEsPJ5nQzqGVz7wVscZ1tRLY6-ERXPJ4eSmchI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CH_3JUEsPJ5nQzqGVz7wVscZ1tRLY6-ERXPJ4eSmchI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Student Name": "={{ $('Webhook').item.json.body.student_name }}",
+            "Student Email": "={{ $('Webhook').item.json.body.student_email }}",
+            "Assignment Name": "={{ $('Upload file').item.json.name }}",
+            "Plagiarism Report": "={{ $('extract plagiarism report').item.json.raw_text }}",
+            "Status": "Ok"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Student Name",
+              "displayName": "Student Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Student Email",
+              "displayName": "Student Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Assignment Name",
+              "displayName": "Assignment Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Plagiarism Report",
+              "displayName": "Plagiarism Report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        704
+      ],
+      "id": "a31839e1-1a0e-48de-a09f-14115b8f0ae7",
+      "name": "plagiarism report1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1PJPicyIC12abqAo",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8489fad7-81ec-45a7-a392-952a53ebf556",
+              "name": "percentage",
+              "value": "={{ Number($json.raw_text.replace(/[^0-9]/g, '')) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        224
+      ],
+      "id": "1eb67506-cc1d-4e2b-b7af-fb3a4e45862e",
+      "name": "extract percentage"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92587c63-56bb-4885-b0b9-af8da21a71f0",
+              "name": "=raw_text",
+              "value": "={{ $json.output[0].content[0].text.trim() }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1008,
+        224
+      ],
+      "id": "1bc849c7-40ee-4481-8323-d05e4934c165",
+      "name": "extract plagiarism report"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        -80
+      ],
+      "id": "e0c05070-16f2-4d63-9522-d7aed52c7555",
+      "name": "Extract text from File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract text from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "extract plagiarism report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "alert message to faculty",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "alert message to student",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "accept message to student",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "accept message to faculty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "alert message to faculty": {
+      "main": [
+        [
+          {
+            "node": "plagiarism report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "alert message to student": {
+      "main": [
+        []
+      ]
+    },
+    "accept message to faculty": {
+      "main": [
+        [
+          {
+            "node": "plagiarism report1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract percentage": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract plagiarism report": {
+      "main": [
+        [
+          {
+            "node": "extract percentage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract text from File": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "94c4aaaf-4b9c-4620-8ba4-7dc9f8b69ebe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "856f7afbdaceef96c7f279328be779babcdb8f72c9176b71adcccaa0278dba96"
+  },
+  "id": "4GnhCDD8vkXsZMTFPOtXp",
+  "tags": []
+}
