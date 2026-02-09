@@ -1,0 +1,236 @@
+{
+  "name": "job application tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "2f50fe1c-686a-4afd-9a0c-b0daf32bf89e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -544,
+        -80
+      ],
+      "id": "68f1cc78-46f7-4dbe-bedd-07f279c6a6b0",
+      "name": "Webhook",
+      "webhookId": "2f50fe1c-686a-4afd-9a0c-b0daf32bf89e"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14Uhgn-s47a5ShrD0pVWIW3SoPLPjWe99Vn5uxl_ORVs",
+          "mode": "list",
+          "cachedResultName": "Job Applications Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14Uhgn-s47a5ShrD0pVWIW3SoPLPjWe99Vn5uxl_ORVs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14Uhgn-s47a5ShrD0pVWIW3SoPLPjWe99Vn5uxl_ORVs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "COMPANY": "={{ $json.query.company }}",
+            "ROLE": "={{ $json.query.role }}",
+            "DATE APPLIED": "={{ $json.query.date }}",
+            "STATUS": "={{ $json.query.status }}",
+            "NOTES": "={{ $json.query.notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "COMPANY",
+              "displayName": "COMPANY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ROLE",
+              "displayName": "ROLE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATE APPLIED",
+              "displayName": "DATE APPLIED",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NOTES",
+              "displayName": "NOTES",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -336,
+        -80
+      ],
+      "id": "2413903f-e9e1-4b8c-bf42-ab874b7f1022",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MmP4dfRl7yk0T2o3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "harinianand728@gmail.com",
+        "subject": "=job application saved",
+        "emailType": "text",
+        "message": "=Your application to {{ $json.COMPANY }} for {{ $json.ROLE }} is saved successfully.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        -80
+      ],
+      "id": "1a604724-b3b9-4eba-b299-4cd4518a1ee3",
+      "name": "Send a message",
+      "webhookId": "3fc3e5cd-c59f-4218-be60-10feb0820fb9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "De1eIU8S0MrMuyBa",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        -80
+      ],
+      "id": "db4a7218-6199-4dbc-afc6-673a0746afb2",
+      "name": "Wait",
+      "webhookId": "bfcfc512-ea8e-409d-92d8-2cf7d422004c"
+    },
+    {
+      "parameters": {
+        "sendTo": "harinianand728@gmail.com",
+        "subject": "=Follow-up Reminder:{{ $('Webhook').item.json.query.company }}-{{ $('Webhook').item.json.query.role }}",
+        "emailType": "text",
+        "message": "=Hi,\n\nThis is a reminder to follow up with {{ $('Webhook').item.json.query.company }} for the role of {{ $('Webhook').item.json.query.role }} applied on {{ $('Webhook').item.json.query.date }}.\n\nStatus: {{ $('Webhook').item.json.query.status }}\n\nGood luck!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        -80
+      ],
+      "id": "0193fe74-14bb-44ae-a29c-16a084e43731",
+      "name": "Send a message1",
+      "webhookId": "5206cdb4-1c7d-4daa-ac5a-b303c6fd9cf4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "vy4fynxrjRZGeNVc",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "fc125a5c-2976-4ade-9da1-d7daad6e9254",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "856f7afbdaceef96c7f279328be779babcdb8f72c9176b71adcccaa0278dba96"
+  },
+  "id": "l93AOnXpRfOyCwZqBro5c",
+  "tags": []
+}
