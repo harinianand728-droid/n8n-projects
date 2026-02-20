@@ -1,0 +1,201 @@
+{
+  "name": "Mood-Based AI Companion Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        -192
+      ],
+      "id": "c662d2f8-bd10-491c-84e6-2b9cb3d1f148",
+      "name": "Telegram Trigger",
+      "webhookId": "3e272c20-99fe-4205-bc32-f92a77c8ac65",
+      "credentials": {
+        "telegramApi": {
+          "id": "OjgL1eCEoaU7mWY9",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Analyze the mood of the following message.\nReturn only one word:\nHappy\nSad\nStressed\nAngry\nMotivated\nNeutral\n\nMessage: {{$json[\"message\"][\"text\"]}}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        -192
+      ],
+      "id": "78da698e-542b-4ff6-989c-8914a558ee41",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "dUBQJz6G3yEguFw0",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72666581-48bf-4a49-b521-f747c7b22a92",
+              "name": "mood",
+              "value": "={{ $json.output[0].content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        -192
+      ],
+      "id": "75257a6f-909f-4d7f-917c-b2a9857a5585",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=A person is feeling {{$json[\"mood\"]}}.\n\nGenerate:\nYou are an emotionally intelligent and supportive AI companion.\n\nRespond in a warm, natural, and friendly tone, like a close friend who truly cares.\n\nWrite the response as 1 or 2 short paragraphs only (not long).\n\nDo NOT use headings, numbering, bullet points, labels, or structured sections.\nDo NOT use phrases like “Mood detected”, “Action”, or “Quote”.\nDo NOT sound clinical, analytical, or robotic.\n\nThe response should:\n- Gently acknowledge and validate the user’s feelings\n- Offer one small and realistic suggestion naturally within the paragraph\n- Include a short encouraging thought blended smoothly\n- Use 2–4 soft and appropriate emojis (like 💙✨🌿🤍🌸) to make it feel warm\n- Keep the language simple and human\n\nMake the message feel comforting, safe, and emotionally supportive.\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        128,
+        -192
+      ],
+      "id": "79f04948-5695-4764-9790-2316a35bc702",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "dUBQJz6G3yEguFw0",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output[0].content[0].text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        -192
+      ],
+      "id": "7a56e3b2-5db7-4e4f-9b01-7d41aef178d6",
+      "name": "Send a text message",
+      "webhookId": "968ea910-b87e-413c-950d-d98433de8216",
+      "credentials": {
+        "telegramApi": {
+          "id": "OjgL1eCEoaU7mWY9",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c83cebb3-cdc0-415e-a695-1619924dfdb4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a9b91a3fcabca1de07bb38a516c7193d4a92bdddf58153346846034dea2429a8"
+  },
+  "id": "CGonpi_4BezGA9JCcF8s5",
+  "tags": []
+}
